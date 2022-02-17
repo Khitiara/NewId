@@ -259,24 +259,58 @@ namespace MassTransit
         {
             var bytes = new byte[16];
 
-            bytes[15] = (byte)(_b >> 16);
-            bytes[14] = (byte)(_b >> 24);
-            bytes[13] = (byte)_a;
-            bytes[12] = (byte)(_a >> 8);
-            bytes[11] = (byte)(_a >> 16);
-            bytes[10] = (byte)(_a >> 24);
-            bytes[9] = (byte)_b;
-            bytes[8] = (byte)(_b >> 8);
-            bytes[7] = (byte)(_c >> 24);
-            bytes[6] = (byte)(_c >> 16);
-            bytes[5] = (byte)(_c >> 8);
-            bytes[4] = (byte)_c;
-            bytes[3] = (byte)(_d >> 24);
-            bytes[2] = (byte)(_d >> 16);
-            bytes[1] = (byte)_d;
-            bytes[0] = (byte)(_d >> 8);
+            TryWriteBytes(bytes);
 
             return bytes;
+        }
+
+        public bool TryWriteBytes(Span<byte> destination)
+        {
+            if (destination.Length < 16)
+                return false;
+
+            destination[15] = (byte)(_b >> 16);
+            destination[14] = (byte)(_b >> 24);
+            destination[13] = (byte)_a;
+            destination[12] = (byte)(_a >> 8);
+            destination[11] = (byte)(_a >> 16);
+            destination[10] = (byte)(_a >> 24);
+            destination[9] = (byte)_b;
+            destination[8] = (byte)(_b >> 8);
+            destination[7] = (byte)(_c >> 24);
+            destination[6] = (byte)(_c >> 16);
+            destination[5] = (byte)(_c >> 8);
+            destination[4] = (byte)_c;
+            destination[3] = (byte)(_d >> 24);
+            destination[2] = (byte)(_d >> 16);
+            destination[1] = (byte)_d;
+            destination[0] = (byte)(_d >> 8);
+            return true;
+        }
+
+        public static bool TryParse(in string input, out NewId result)
+        {
+            if (input == null)
+            {
+                result = default;
+                return false;
+            }
+
+            return TryParse((ReadOnlySpan<char>)input, out result);
+        }
+
+        public NewId Parse(string input) {
+            return new NewId(input);
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> input, out NewId result) {
+            if (!Guid.TryParse(input, out var guid)) {
+                result = default;
+                return false;
+            }
+
+            result = FromGuid(guid);
+            return true;
         }
 
         public override string ToString()
